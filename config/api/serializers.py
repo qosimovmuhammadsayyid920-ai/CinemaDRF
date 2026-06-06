@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Actor, Rejissior, Genre, Movie
+from .models import Actor, Rejissior, Genre, Movie, Comment
+from django.contrib.auth.models import User
 
 class ActorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -72,3 +73,16 @@ class MovieAdminSerializer(serializers.ModelSerializer):
         model = Movie
         fields = ['title', 'description', 'release_year', 'poster', 'genre', 'rejissior', 'actor',]
         read_only_fields = ['id']
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username',]
+
+class CommentSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    class Meta:
+        model = Comment
+        fields = ['id', 'text', 'created_at', 'user', 'movie' ]
+        read_only_fields = ['id', 'user', 'movie']
+        depth = 1
