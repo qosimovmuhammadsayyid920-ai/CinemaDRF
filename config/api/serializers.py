@@ -15,16 +15,53 @@ class ActorAdminSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 class RejissiorSerializer(serializers.ModelSerializer):
+    # movies = serializers.StringRelatedField(many=True)
+    # movies = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    # movies = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='movie-detail')
+    # movies = serializers.SlugRelatedField(many=True, read_only=True, slug_field='title')
+    url = serializers.HyperlinkedIdentityField(view_name='rejissior-detail')
+    
     class Meta:
         model = Rejissior
-        fields = ['name', 'birth_year', 'grade']
+        fields = ['name', 'birth_year', 'grade', 'movies', 'url']
         read_only_fields = ['id']
 
-class GenreSerializer(serializers.ModelSerializer):
+class MovieSerializerForGenre(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = ['id', 'title', 'description', 'release_year', 'poster', 'rejissior', 'actor']
+
+class GenreSerializer(serializers.ModelSerializer): 
+    # movies = serializers.StringRelatedField(many=True)
+    # movies = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    # movies = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='movie-detail')
+    # movies = serializers.SlugRelatedField(many=True, read_only=True, slug_field='title')
+    # url = serializers.HyperlinkedIdentityField(view_name='movie-detail')
+
+    movies = MovieSerializerForGenre(many=True)
+
     class Meta:
         model = Genre
         fields = "__all__"
         read_only_fields = ['id']
+    
+    def create(self, validated_data):
+        movies = validated_data.pop('movies')
+        genre = Genre.objects.create(**validated_data)
+        for movie in movies:
+            Movie.objects.create(genre=genre, **movie)
+        return genre
+    
+    def update(self, instance, validated_data):
+        movies = validated_data.pop('movies')
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        instance.movies.all().delete()
+        for movie in movies:
+            Movie.objects.create(genre=instance, **movie)
+        return instance
 
 class MovieSerializer(serializers.ModelSerializer):
     genre_write = serializers.ChoiceField(

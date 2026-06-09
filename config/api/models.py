@@ -27,14 +27,13 @@ class Movie(models.Model):
     title = models.CharField(max_length=150)
     description = models.TextField()
     release_year = models.IntegerField()
-    poster = models.ImageField(upload_to='movie_images/')
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-    rejissior = models.ForeignKey(Rejissior, on_delete=models.CASCADE)
+    poster = models.ImageField(upload_to='movie_images/', null=True, blank=True)
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE, related_name='movies')
+    rejissior = models.ForeignKey(Rejissior, on_delete=models.CASCADE, related_name='movies')
     actor = models.ForeignKey(Actor, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.title
-
+        return self.title + '__str__'
 
 class Comment(models.Model):
     text = models.TextField()
