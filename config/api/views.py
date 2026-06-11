@@ -2,21 +2,17 @@ from .models import Actor, Rejissior, Genre, Movie, Comment
 from .serializers import (ActorSerializer, GenreSerializer, MovieSerializer,
                           RejissiorSerializer, ActorAdminSerializer, MovieAdminSerializer, CommentSerializer)
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.viewsets import ModelViewSet
 from rest_framework import permissions
 from rest_framework.generics import get_object_or_404
 from .permissions import MyIsAuthenticatedOrReadOnly, IsOwner
 
-class GenreAPIView(ListCreateAPIView):
+class GenreAPIViewSet(ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
 
-class GenreRetrieveAPIView(RetrieveUpdateDestroyAPIView):
-    queryset = Genre.objects.all()
-    serializer_class = GenreSerializer
-    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
-
-class ActorAPIView(ListCreateAPIView):
+class ActorAPIViewSet(ModelViewSet):
     queryset = Actor.objects.all()
     serializer_class = ActorSerializer
     permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
@@ -26,12 +22,7 @@ class ActorAPIView(ListCreateAPIView):
             return ActorAdminSerializer
         return ActorSerializer
 
-class ActorRetrieveAPIView(RetrieveUpdateDestroyAPIView):
-    queryset = Actor.objects.all()
-    serializer_class = ActorSerializer
-    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
-
-class RejissiorAPIView(ListCreateAPIView):
+class RejissiorAPIViewSet(ModelViewSet):
     queryset = Rejissior.objects.all()
     serializer_class = RejissiorSerializer
     permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
@@ -42,15 +33,10 @@ class RejissiorAPIView(ListCreateAPIView):
             return self.queryset.filter(grade=grade)
         return self.queryset.all()
     
-class RejissiorRetrieveAPIView(RetrieveUpdateDestroyAPIView):
-    queryset = Rejissior.objects.all()
-    serializer_class = RejissiorSerializer
-    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
-
-class MovieAPIView(ListCreateAPIView):
+class MovieAPIViewSet(ModelViewSet):
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
-    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         genre = self.request.query_params.get('genre')
@@ -63,15 +49,11 @@ class MovieAPIView(ListCreateAPIView):
             return MovieAdminSerializer
         return MovieSerializer
     
-class MovieRetrieveAPIView(RetrieveUpdateDestroyAPIView):
-    queryset = Movie.objects.all()
-    serializer_class = MovieSerializer
-    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
-
-class CommentAPIView(ListCreateAPIView):
+class CommentAPIViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [MyIsAuthenticatedOrReadOnly,]
+    permission_classes = [MyIsAuthenticatedOrReadOnly, IsOwner]
+    lookup_url_kwarg = 'comment_id'
 
     def get_queryset(self):
         movie_id = self.kwargs.get('movie_id')
@@ -83,9 +65,3 @@ class CommentAPIView(ListCreateAPIView):
         serializer.validated_data['movie'] = movie
         serializer.save()
         return serializer
-
-class CommentRetrieveAPIView(RetrieveUpdateDestroyAPIView):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-    permission_classes = [MyIsAuthenticatedOrReadOnly, IsOwner,]
-    lookup_url_kwarg = 'comment_id'

@@ -1,19 +1,21 @@
-from django.urls import path
-from .views import (MovieAPIView, ActorAPIView, GenreAPIView, RejissiorAPIView,
-                    ActorRetrieveAPIView, RejissiorRetrieveAPIView, GenreRetrieveAPIView, MovieRetrieveAPIView, CommentAPIView, CommentRetrieveAPIView)
+from django.urls import path, include
+from rest_framework.routers import SimpleRouter, DefaultRouter
+from .views import MovieAPIViewSet, ActorAPIViewSet, GenreAPIViewSet, RejissiorAPIViewSet, CommentAPIViewSet
+
+router = DefaultRouter()
+router.register('movies', MovieAPIViewSet)
+router.register('actors', ActorAPIViewSet)
+router.register('genres', GenreAPIViewSet)
+router.register('rejissiors', RejissiorAPIViewSet)
 
 urlpatterns = [
-    path('movies/', MovieAPIView.as_view()),
-    path('movies/<int:pk>/', MovieRetrieveAPIView.as_view(), name='movie-detail'),
-    path('movies/genres/<int:pk>/', MovieAPIView.as_view()),
-    path('actors/', ActorAPIView.as_view()),
-    path('actors/<int:pk>/', ActorRetrieveAPIView.as_view()),
-    path('actors/grade/<int:pk>/', ActorAPIView.as_view()),
-    path('genres/', GenreAPIView.as_view()),
-    path('genres/<int:pk>/', GenreRetrieveAPIView.as_view()),
-    path('rejissiors/', RejissiorAPIView.as_view()),
-    path('rejissiors/<int:pk>/', RejissiorRetrieveAPIView.as_view(), name='rejissior-detail'),
-    path('movies/<int:movie_id>/comments/', CommentAPIView.as_view()),
-    path('movies/<int:movie_id>/comments/<int:comment_id>/', CommentRetrieveAPIView.as_view()),
-    
+    path('movies/<int:movie_id>/comments/',
+         CommentAPIViewSet.as_view({'get': 'list', 'post': 'create'}),
+         name='comment-list'),
+
+    path('movies/<int:movie_id>/comments/<int:comment_id>/',
+         CommentAPIViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+         name='comment-detail'),
+        
+    path('', include(router.urls))
 ]
